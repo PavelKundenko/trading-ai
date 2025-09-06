@@ -1,5 +1,5 @@
-export const ALLOWED_IMAGE_FORMATS = ['.png', '.jpeg', '.jpg']
+export const SSE_CHANNEL = 'sse-notifications'
 
-export interface TextAnalysisRequest {
+export interface TextAnalysisInfo {
   content: string
 }
