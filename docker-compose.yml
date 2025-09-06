@@ -12,6 +12,10 @@ services:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      N8N_URL: http://n8n:5678
+      REDIS_URL: redis://redis-stack-server:6379
+    depends_on:
+      - redis-stack-server
     restart: unless-stopped
 
   n8n:

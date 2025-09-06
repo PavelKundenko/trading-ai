@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 
+const N8N_URL = process.env.N8N_URL || 'http://localhost:5678';
+
 export async function POST(request: Request) {
   try {
-    const response = await fetch('http://localhost:5678/webhook-test/upload-file', {
+    console.log('Uploading file to webhook');
+    const response = await fetch(`${N8N_URL}/webhook-test/upload-file`, {
       method: 'POST',
       body: await request.formData()
     });
