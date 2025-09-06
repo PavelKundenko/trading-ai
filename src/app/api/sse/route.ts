@@ -1,6 +1,4 @@
 import { subscribeRedis } from '@/libs/redis'
-import { constants } from 'fs'
-import { access, readFile } from 'fs/promises'
 
 export async function POST() {
   const encoder = new TextEncoder()
@@ -9,7 +7,7 @@ export async function POST() {
     async start(controller) {
       try {
         await subscribeRedis(
-          async (data: any) => {
+          async (data: unknown) => {
             controller.enqueue(encoder.encode(`event: data\ndata: ${data}\n\n`))
           }
         )

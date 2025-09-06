@@ -13,12 +13,10 @@ export async function publishRedis(data: TextAnalysisInfo) {
   }
 }
 
-export async function subscribeRedis(callback: any) {
+export async function subscribeRedis(callback: (data: unknown) => Promise<void>) {
   const subscriber = createClient();
   subscriber.connect();
 
   // Subscribing to a channel
-  subscriber.subscribe(SSE_CHANNEL, (message) => {
-    callback(message);
-  });
+  subscriber.subscribe(SSE_CHANNEL, callback);
 }
