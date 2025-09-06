@@ -1,7 +1,7 @@
 import { constants } from 'fs'
 import { access, readFile } from 'fs/promises'
 
-export async function POST(request: Request) {
+export async function POST() {
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({

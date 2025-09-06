@@ -1,7 +1,5 @@
 "use client";
 
-import type { LocalPreview } from '@/app/analyze/page';
-
 type ChatProps = {
   onReset: () => void;
 };
