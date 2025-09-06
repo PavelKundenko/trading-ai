@@ -18,7 +18,7 @@ export default function TvChart({
     script.src = 'https://s3.tradingview.com/tv.js';
     script.async = true;
     script.onload = () => {
-      // @ts-ignore global from tv.js
+      // @ts-expect-error global from tv.js
       new TradingView.widget({
         container_id: container.current!.id,
         autosize: true,

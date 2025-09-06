@@ -10,7 +10,7 @@ import {
 } from "react";
 import Image from "next/image";
 import { LocalPreview } from '@/app/analyze/page';
-import DriveButton from '@/app/analyze/components/GoogleDriveButton';
+// import DriveButton from '@/app/analyze/components/GoogleDriveButton';
 
 export default function UploadImage({ onUpload, previews, setPreviews, variant = "standalone" }: {
   previews: LocalPreview[];
@@ -46,7 +46,7 @@ export default function UploadImage({ onUpload, previews, setPreviews, variant =
       if (nextPreviews.length === 0) return;
       setPreviews((prev) => [...prev, ...nextPreviews]);
     },
-    [acceptedMimeTypes]
+    [acceptedMimeTypes, setPreviews]
   );
 
   const handleFiles = useCallback(
@@ -68,9 +68,9 @@ export default function UploadImage({ onUpload, previews, setPreviews, variant =
     [handleFiles]
   );
 
-  const onBrowseClick = useCallback(() => {
-    inputRef.current?.click();
-  }, []);
+  // const onBrowseClick = useCallback(() => {
+  //   inputRef.current?.click();
+  // }, []);
 
   const onRemove = useCallback((id: string) => {
     setPreviews((prev: LocalPreview[]) => {
@@ -79,7 +79,7 @@ export default function UploadImage({ onUpload, previews, setPreviews, variant =
       const next = prev.filter((p) => p.id !== id);
       return next;
     });
-  }, []);
+  }, [setPreviews]);
 
   const onPaste = useCallback(
     (event: React.ClipboardEvent<HTMLDivElement>) => {
