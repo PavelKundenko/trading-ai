@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const uploaded = await response.json();
 
     return NextResponse.json({
-      message: 'File uploaded to Google Drive successfully',
+      message: 'File uploaded successfully',
       fileId: uploaded.id,
       fileName: uploaded.name,
       status: 'success'

@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const body: TextAnalysisRequest = await request.json();
 
-    writeFileSync('test.txt', JSON.stringify(body, null, 2), 'utf8');
+    writeFileSync('test.txt', JSON.stringify(body), 'utf8');
 
     return NextResponse.json({
       status: 'success'
