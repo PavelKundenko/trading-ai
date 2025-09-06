@@ -14,15 +14,15 @@ export async function POST(request: Request) {
     const uploaded = await response.json();
 
     return NextResponse.json({
-      message: 'File uploaded to Google Drive successfully',
+      message: 'File uploaded successfully',
       fileId: uploaded.id,
       fileName: uploaded.name,
       status: 'success'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       {
-        message: error.message || 'Failed to upload file',
+        message: error instanceof Error ? error.message : 'Failed to upload file',
         status: 'error'
       },
       { status: 500 }

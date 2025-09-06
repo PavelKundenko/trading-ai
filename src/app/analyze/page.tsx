@@ -12,9 +12,7 @@ export type LocalPreview = {
 };
 
 export default function AnalyzePage() {
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [mode, setMode] = useState<"choice" | "upload" | "chart" | "chat">("choice");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<LocalPreview[]>([]);
 
   const onUpload = useCallback(
@@ -34,14 +32,10 @@ export default function AnalyzePage() {
       
     }
 
-    setUploadedFiles(files);
-    setIsChatOpen(true);
     setMode("chat");
   }, []);
 
   const onReset = useCallback(() => {
-    setUploadedFiles([]);
-    setIsChatOpen(false);
     setPreviews([]);
     setMode("choice");
   }, []);
@@ -124,7 +118,7 @@ export default function AnalyzePage() {
           (mode === "chat" ? `translate-x-0 opacity-100` : `translate-x-full opacity-0 pointer-events-none`)
         }
       >
-        <Chat files={uploadedFiles} onReset={onReset} previews={previews} setPreviews={setPreviews} />
+        <Chat onReset={onReset} />
       </div>
     </div>
   );
