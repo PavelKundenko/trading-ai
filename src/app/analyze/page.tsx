@@ -124,7 +124,7 @@ export default function AnalyzePage() {
           (mode === "chat" ? `translate-x-0 opacity-100` : `translate-x-full opacity-0 pointer-events-none`)
         }
       >
-        <Chat files={uploadedFiles} onReset={onReset} previews={previews} setPreviews={setPreviews} />
+        <Chat onReset={onReset} />
       </div>
     </div>
   );

@@ -1,15 +1,12 @@
 "use client";
 
-import { LocalPreview } from '@/app/analyze/page';
+import type { LocalPreview } from '@/app/analyze/page';
 
 type ChatProps = {
-  files: File[];
   onReset: () => void;
-  previews: LocalPreview[];
-  setPreviews: (previews: LocalPreview[]) => void;
 };
 
-export default function Chat({ files, onReset, previews, setPreviews }: ChatProps) {
+export default function Chat({ onReset }: ChatProps) {
   return (
     <div className="min-h-screen w-full px-6 py-10 sm:px-10 bg-[radial-gradient(1200px_600px_at_50%_-10%,#052d23_0%,transparent_60%),radial-gradient(800px_400px_at_120%_10%,#0b1220_0%,transparent_60%),radial-gradient(800px_400px_at_-20%_20%,#1b0f28_0%,transparent_60%)] text-foreground">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
