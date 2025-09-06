@@ -28,5 +28,13 @@ services:
       - n8n_data:/home/node/.n8n
     restart: unless-stopped
 
+  redis-stack-server:
+    image: redis/redis-stack-server:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
 volumes:
   n8n_data:
+  redis-data:
