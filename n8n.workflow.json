@@ -1,0 +1,180 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1q6bAIRoINwVBcybOEG9ilreTPBmrHd1s",
+          "mode": "list",
+          "cachedResultName": "N8nTF",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1q6bAIRoINwVBcybOEG9ilreTPBmrHd1s"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fb4c03d7-dff3-4a8d-ae33-c87d60936b0d",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "O7Iz6MhHZxzgbq5C",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7da8d455-7ca7-48f4-a225-187ad0538684",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "O7Iz6MhHZxzgbq5C",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini-2024-07-18",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI-2024-07-18"
+        },
+        "text": "You are an experienced short-term crypto trader (scalping/day-trading) acting as a deterministic trade planner. Analyze a Binance chart screenshot and produce one actionable trade plan that maximizes expected return per unit risk while minimizing false entries. Output only the minimal JSON object defined below.\nScope & constraints\nSource of truth: the Binance screenshot. Decide primarily from what is visible. Do not invent numbers.\nWhat to read: symbol (e.g., “RUNE/USDT”), last price, 24h high/low/change, selected timeframe tab (5m/15m/1H/1D), visible MA/EMA, candles, volume bars, any legible order book/last trades.\nStyle: scalp/day-trade (minutes → hours).\nRisk preference: standard; prefer ≥ 1.5R.\nTime: all timestamps UTC.\nOutput: JSON only (no prose/markdown; no extra keys).\nPrimary objectives (in order)\nCapital preservation: never imply risk > 1.00% of equity (or 0.50% if confidence is low).\nPositive expectancy: prefer entries with ≥ 1.5R within the detected timeframe session.\nClarity: produce precise, executable levels and a beginner-friendly advice that exactly mirrors the JSON numbers.\nData interpretation rules (must follow)\nTimeframe detection: read the highlighted tab. If ambiguous, infer from axis/bar density and lower confidence.\nTick precision: infer from the last-price decimals and apply to all prices (≈$1 assets → 0.001).\nVolume baseline: use the visual median of the last ~20 bars; “high volume” = >1.20× median; “expansion/capitulation” = >2.00×.\nVolatility regime: estimate proxy-ATR from the average high–low of the last ~20 bars.\nHigh vol ⇒ slightly wider SL and farther TPs.\nLow vol ⇒ tighter SL and closer TPs.\nSupport/Resistance: prefer the two most recent swing highs/lows with ≥2 touches, aligned with round numbers and visible MAs. Use the nearest actionable S/R to current price.\nOrder book (if legible): short-term pressure if top-of-book size ratio >1.5× or a clear wall near entry; avoid entering into the wall unless fading the range edge.\nBias & multi-timeframe (MTF)\nDetermine short-term bias from MA slope/price position and HH/HL vs LH/LL structure.\nIf higher TF (1H/1D) agrees, add +0.15 to confidence; if conflicts, −0.20 and switch to 0.50% risk in advice or require stronger confirmation (close beyond level + high volume).\nEntry logic (choose one tactic only)\nPullback (preferred with trend): LIMIT at MA/level after a clear rejection candle (long wick against entry direction) and micro-structure shift (e.g., lower high for shorts).\nBreakout (momentum): require a close of the detected TF beyond the level by ≥0.10% (≈$1 assets) and volume >1.20× recent median; then MARKET entry allowed with max slippage ≤0.10% (state in advice).\nRange fade (only with flat MAs & tight range): enter at the edge; SL just beyond wick extreme; TP at mid-range, then far edge.\nStops & targets (structure-first)\nStop-loss: place beyond the nearest invalidation swing (above swing high for shorts / below swing low for longs) + buffer 0.15–0.30% for ≈$1 assets or 0.25–0.50× proxy-ATR.\nTP ladder (3 targets):\nTP1 ≈ 1.0R, TP2 ≈ 1.5–2.0R, TP3 ≈ 2.5–3.0R or nearest visible S/R (whichever first).\nAfter TP1 ⇒ move SL to breakeven; after TP2 ⇒ enable trailing stop (0.4–0.8% or ≈0.5× proxy-ATR).\nOrder maintenance: cancel if not filled within 3–5 candles of the detected TF, or if price action invalidates the setup (e.g., closes past the stop reference).\nConfidence rubric (0.00–1.00)\nStart at 0.60; apply: +0.15 MTF aligns; +0.10 confirmed breakout (close beyond + high volume); +0.05 supportive order book.\n−0.10 timeframe ambiguous; −0.10 key level approximate; −0.15 counter-trend entry.\nCap 0.95, floor 0.30. If < 0.60, recommend 0.50% risk in advice; otherwise 1.00%.\n‘Hold’ rule (rare)\nUse \"hold\" only if (A) symbol/last price unreadable, or (B) you cannot identify at least two of {short-term bias, nearest support, nearest resistance}.\nWhen \"hold\", set entry_price, stop_loss, take_profit, order_quantity, order_type to null, keep confidence ≤ 0.40, and in advice give both conditional triggers (long-above X & short-below Y) with SL/TPs.\nAdvice style (must be beginner-friendly)\n1–3 short imperative sentences; plain English.\nInclude: order type (LIMIT/MARKET + slippage if MARKET), Entry, STOP, TP1/TP2/TP3 with % split, risk rule (1.00% if confidence ≥0.60 else 0.50%), breakeven & trailing, cancel-if-not-filled window, time horizon (e.g., “close by end of day UTC”).\nAll numbers in advice must exactly equal the JSON values.\nRounding\nPrices: 3 decimals for ≈$1 quotes; 2 for ≥$10; 5 for <$0.10.\nPercentages in advice: 2 decimals.\nReturn exactly this JSON (and nothing else)\n{\"symbol\": \"RUNEUSDT\",\"timestamp_utc\": \"2025-09-06T12:30:00Z\",\"timeframe_detected\": \"15m\",\"signal\": \"sell\",\"entry_price\": 1.230,\"stop_loss\": 1.280,\"take_profit\": [{ \"price\": 1.200, \"volume_percent\": 50, \"order_type\": \"limit\" },{ \"price\": 1.180, \"volume_percent\": 30, \"order_type\": \"limit\" },{ \"price\": 1.150, \"volume_percent\": 20, \"order_type\": \"market\" }],\"order_quantity\": null,\"order_type\": \"limit\",\"confidence\": 0.72,\"advice\": \"Place a LIMIT SELL at 1.230; STOP 1.280. Take profit at 1.200/1.180/1.150 (50%/30%/20%). Risk 1.00% of equity if confidence ≥ 0.60, else 0.50% (size = (risk% * equity) / |1.280 - 1.230|). Move stop to breakeven after TP1, trail 0.5% after TP2, cancel if not filled within 3×15m candles, and close by end of day UTC.\",\"issues\": [] } \nField rules\nsignal ∈ {\"buy\", \"sell\", \"hold\"}.\norder_type: default \"limit\"; use \"market\" only for confirmed breakouts (as defined).\norder_quantity: keep null if balance unknown; put sizing rule in advice.\nadvice: 1–3 sentences; must include entry/stop/TP ladder with % split, risk rule, breakeven & trailing, cancel window, and time horizon.\nissues: short reason codes if any (e.g., \"LOW_VISIBILITY\", \"NO_CLEAN_LEVELS\", \"SYMBOL_UNREADABLE\"); empty if none.",
+        "inputType": "base64",
+        "options": {
+          "maxTokens": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        416,
+        0
+      ],
+      "id": "50c7a19e-947b-4042-a2f7-359df516a8e1",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "IJKiNTaBUCG9AK6c",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://localhost:5011/dashboard/n8n-test",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "fileId",
+              "value": "={{ $('Download file').item.json.id }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "10adef19-13c6-4080-bbe6-12f71bd6b184",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7397067d-a3a7-4f0b-a2ad-245e264e50ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6d8856ea3ac4095f1083294fa7642772bbd6ee8356d6ecd3ff0435dc1b0f6860"
+  },
+  "id": "IsWHm6WdoAXbBvzJ",
+  "tags": []
+}
