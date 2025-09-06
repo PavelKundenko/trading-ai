@@ -1,3 +1,4 @@
+import { subscribeRedis } from '@/libs/redis'
 import { constants } from 'fs'
 import { access, readFile } from 'fs/promises'
 
@@ -7,19 +8,11 @@ export async function POST(request: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        try {
-          await access('test.txt', constants.F_OK)
-        } catch {
-          controller.enqueue(encoder.encode('event: no_data\ndata: {}\n\n'))
-          return
-        }
-
-        while (true) {
-          const data = await readFile('test.txt', 'utf8')
-          controller.enqueue(encoder.encode(`event: data\ndata: ${data}\n\n`))
-
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+        await subscribeRedis(
+          async (data: any) => {
+            controller.enqueue(encoder.encode(`event: data\ndata: ${data}\n\n`))
+          }
+        )
       } catch (err) {
         controller.enqueue(
           encoder.encode(

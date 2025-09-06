@@ -1,16 +1,16 @@
-import { TextAnalysisRequest } from '@/types/api.types';
-import { writeFileSync } from 'fs';
-import { NextResponse } from 'next/server';
+import { publishRedis } from '@/libs/redis'
+import { TextAnalysisInfo } from '@/types/api.types'
+import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const body: TextAnalysisRequest = await request.json();
+    const body: TextAnalysisInfo = await request.json()
 
-    writeFileSync('test.txt', JSON.stringify(body), 'utf8');
+    await publishRedis(body)
 
     return NextResponse.json({
       status: 'success'
-    });
+    })
   } catch (error: any) {
     return NextResponse.json(
       {
@@ -18,6 +18,6 @@ export async function POST(request: Request) {
         status: 'error'
       },
       { status: 500 }
-    );
+    )
   }
 }
