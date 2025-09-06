@@ -19,10 +19,10 @@ export async function POST(request: Request) {
       fileName: uploaded.name,
       status: 'success'
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       {
-        message: error.message || 'Failed to upload file',
+        message: error instanceof Error ? error.message : 'Failed to upload file',
         status: 'error'
       },
       { status: 500 }
