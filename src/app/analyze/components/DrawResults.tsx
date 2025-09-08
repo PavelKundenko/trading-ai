@@ -12,12 +12,12 @@ export type AnalyzeResult = {
   symbol: string;
   timestamp_utc: string;
   timeframe_detected: string;
-  signal: "buy" | "sell" | string;
-  entry_price: number;
-  stop_loss: number;
+  signal: "buy" | "sell" | "hold" | string;
+  entry_price: number | null;
+  stop_loss: number | null;
   take_profit: TakeProfitLevel[];
   order_quantity: number | null;
-  order_type: "limit" | "market" | string;
+  order_type: "limit" | "market" | string | null;
   confidence: number;
   advice: string;
   issues: string[];
@@ -27,6 +27,7 @@ export default function DrawResults({ data }: { data: AnalyzeResult }) {
   const signalColor = useMemo(() => {
     if (data.signal === "buy") return "text-emerald-300";
     if (data.signal === "sell") return "text-rose-300";
+    if (data.signal === "hold") return "text-yellow-300";
     return "text-zinc-300";
   }, [data.signal]);
 
@@ -46,15 +47,15 @@ export default function DrawResults({ data }: { data: AnalyzeResult }) {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-2xl border border-emerald-700/40 bg-gradient-to-b from-zinc-900 to-black p-5">
             <div className="text-zinc-400 text-xs">Entry</div>
-            <div className="text-xl">{data.entry_price}</div>
+            <div className="text-xl">{data.entry_price ?? "N/A"}</div>
           </div>
           <div className="rounded-2xl border border-emerald-700/40 bg-gradient-to-b from-zinc-900 to-black p-5">
             <div className="text-zinc-400 text-xs">Stop Loss</div>
-            <div className="text-xl">{data.stop_loss}</div>
+            <div className="text-xl">{data.stop_loss ?? "N/A"}</div>
           </div>
           <div className="rounded-2xl border border-emerald-700/40 bg-gradient-to-b from-zinc-900 to-black p-5">
             <div className="text-zinc-400 text-xs">Order Type</div>
-            <div className="text-xl uppercase">{data.order_type}</div>
+            <div className="text-xl uppercase">{data.order_type ?? "N/A"}</div>
           </div>
         </section>
 

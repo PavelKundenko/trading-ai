@@ -9,28 +9,7 @@ type TakeProfitItem = {
   order_type: string;
 };
 
-type AnalysisPayload = {
-  symbol: string;
-  timestamp_utc?: string;
-  timeframe_detected?: string;
-  signal?: string;
-  entry_price?: number;
-  stop_loss?: number;
-  take_profit?: TakeProfitItem[];
-  order_quantity?: number | null;
-  order_type?: string;
-  confidence?: number;
-  advice?: string;
-  issues?: unknown[];
-};
 
-function parseJsonSafely(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-}
 
 function isTakeProfitItem(value: unknown): value is TakeProfitItem {
   if (!value || typeof value !== "object") return false;
@@ -49,11 +28,11 @@ function isAnalyzeResult(value: unknown): value is AnalyzeResult {
   if (typeof v.timestamp_utc !== "string") return false;
   if (typeof v.timeframe_detected !== "string") return false;
   if (typeof v.signal !== "string") return false;
-  if (typeof v.entry_price !== "number") return false;
-  if (typeof v.stop_loss !== "number") return false;
+  if (!(typeof v.entry_price === "number" || v.entry_price === null)) return false;
+  if (!(typeof v.stop_loss === "number" || v.stop_loss === null)) return false;
   if (!Array.isArray(v.take_profit) || !v.take_profit.every(isTakeProfitItem)) return false;
   if (!(typeof v.order_quantity === "number" || v.order_quantity === null)) return false;
-  if (typeof v.order_type !== "string") return false;
+  if (!(typeof v.order_type === "string" || v.order_type === null)) return false;
   if (typeof v.confidence !== "number") return false;
   if (typeof v.advice !== "string") return false;
   if (!Array.isArray(v.issues)) return false;
@@ -103,12 +82,12 @@ export default function Chat({ onReset }: ChatProps) {
 
         for (const part of parts) {
           const lines = part.split("\n");
-          let eventType: string | null = null;
           const dataLines: string[] = [];
 
           for (const line of lines) {
             if (line.startsWith("event:")) {
-              eventType = line.slice(6).trim();
+              // eventType could be used for different event handling in the future
+              line.slice(6).trim();
             } else if (line.startsWith("data:")) {
               dataLines.push(line.slice(5).trim());
             }
@@ -116,6 +95,8 @@ export default function Chat({ onReset }: ChatProps) {
 
           const rawData = dataLines.join("\n");
           let output = rawData.trim();
+          let analyzeResult: AnalyzeResult | null = null;
+          
           try {
             let parsed: unknown = JSON.parse(output);
             if (typeof parsed === "string") {
@@ -125,16 +106,47 @@ export default function Chat({ onReset }: ChatProps) {
                 // keep as string
               }
             }
-            if (parsed && typeof parsed === "object") {
+            
+            // Handle TextAnalysisInfo structure with content field
+            if (parsed && typeof parsed === "object" && "content" in parsed) {
+              const content = (parsed as { content: unknown }).content;
+              if (typeof content === "string") {
+                // Extract JSON from markdown code blocks
+                const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch) {
+                  try {
+                    const extractedJson = JSON.parse(jsonMatch[1]);
+                    if (isAnalyzeResult(extractedJson)) {
+                      analyzeResult = extractedJson;
+                      output = JSON.stringify(extractedJson, null, 2);
+                    } else {
+                      output = JSON.stringify(extractedJson, null, 2);
+                    }
+                  } catch {
+                    // If JSON extraction fails, show the content as is
+                    output = content;
+                  }
+                } else {
+                  // No JSON code block found, show content as is
+                  output = content;
+                }
+              } else {
+                output = JSON.stringify(parsed, null, 2);
+              }
+            } else if (parsed && typeof parsed === "object") {
               output = JSON.stringify(parsed, null, 2);
               if (isAnalyzeResult(parsed)) {
-                setLatestResult(parsed);
+                analyzeResult = parsed;
               }
             } else if (typeof parsed === "string") {
               output = parsed;
             }
           } catch {}
+          
           setMessages(output);
+          if (analyzeResult) {
+            setLatestResult(analyzeResult);
+          }
         }
       };
 

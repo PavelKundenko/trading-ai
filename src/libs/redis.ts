@@ -17,8 +17,26 @@ export async function publishRedis(data: TextAnalysisInfo) {
 
 export async function subscribeRedis(callback: (data: unknown) => Promise<void>) {
   const subscriber = createClient({ url: REDIS_URL });
-  await subscriber.connect();
+  
+  try {
+    await subscriber.connect();
+    
+    // Add error handler for the subscriber
+    subscriber.on('error', (err: Error) => {
+      console.error('Redis subscriber error:', err);
+    });
 
-  // Subscribing to a channel
-  subscriber.subscribe(SSE_CHANNEL, callback);
+    // Subscribing to a channel
+    await subscriber.subscribe(SSE_CHANNEL, callback);
+    
+    return subscriber;
+  } catch (err) {
+    // If connection or subscription fails, clean up
+    try {
+      await subscriber.disconnect();
+    } catch (disconnectErr) {
+      console.error('Error disconnecting Redis subscriber during cleanup:', disconnectErr);
+    }
+    throw err;
+  }
 }
